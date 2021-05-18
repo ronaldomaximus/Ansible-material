@@ -1,0 +1,68 @@
+  - name: "TASK 10: SETUP SITES"
+          netbox.netbox.netbox_site:
+          netbox_url: "{{ lookup('ENV', 'NETBOX_URL') }}"
+             netbox_token: "{{ lookup('ENV', 'NETBOX_API_KEY') }}"
+             data: "{{ item }}"
+           loop: "{{ site_list }}"
+ 
+# Manufacturers, Device Types, and Platforms
+
+   - name: "TASK 100: NETBOX >> ADD DEVICE TO NETBOX"
+      netbox.netbox.netbox_device:
+        netbox_url: "{{ lookup('ENV', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ENV', 'NETBOX_API_KEY') }}"
+        data:
+          name: "{{ inventory_hostname }}"
+          device_type: "{{ ansible_facts['net_model'] }}"
+          platform: IOS  # May be able to use a filter to define in future
+          serial: "{{ ansible_facts['net_serialnum'] }}"
+          status: Active
+          device_role: "{{ inventory_hostname | get_role_from_hostname }}"
+          site: “ANSIBLE_DEMO_SITE"
+          custom_fields:
+            code_version: "{{ ansible_facts['net_version'] }}"
+
+    - name: "TASK 110: NETBOX >> ADD INTERFACES TO NETBOX"
+      netbox.netbox.netbox_device_interface:
+        netbox_url: "{{ lookup('ENV', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ENV', 'NETBOX_API_KEY') }}"
+        data:
+          device: "{{ inventory_hostname }}"
+          name: "{{ item.key }}"
+          form_factor: "{{ item.key | get_interface_type }}"  # Define types
+          mac_address: "{{ item.value.macaddress | ansible.netcommon.hwaddr }}"
+        state: present
+      with_dict:
+        - "{{ ansible_facts['net_interfaces'] }}"
+
+# Add Devices & Interfaces
+
+
+
+- name: "TASK 100: NETBOX >> ADD DEVICE TO NETBOX"
+      netbox.netbox.netbox_device:
+        netbox_url: "{{ lookup('ENV', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ENV', 'NETBOX_API_KEY') }}"
+        data:
+          name: "{{ inventory_hostname }}"
+          device_type: "{{ ansible_facts['net_model'] }}"
+          platform: IOS  # May be able to use a filter to define in future
+          serial: "{{ ansible_facts['net_serialnum'] }}"
+          status: Active
+          device_role: "{{ inventory_hostname | get_role_from_hostname }}"
+          site: “ANSIBLE_DEMO_SITE"
+          custom_fields:
+            code_version: "{{ ansible_facts['net_version'] }}"
+
+    - name: "TASK 110: NETBOX >> ADD INTERFACES TO NETBOX"
+      netbox.netbox.netbox_device_interface:
+        netbox_url: "{{ lookup('ENV', 'NETBOX_URL') }}"
+        netbox_token: "{{ lookup('ENV', 'NETBOX_API_KEY') }}"
+        data:
+          device: "{{ inventory_hostname }}"
+          name: "{{ item.key }}"
+          form_factor: "{{ item.key | get_interface_type }}"  # Define types
+          mac_address: "{{ item.value.macaddress | ansible.netcommon.hwaddr }}"
+        state: present
+      with_dict:
+        - "{{ ansible_facts['net_interfaces'] }}"
